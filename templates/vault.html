@@ -9,7 +9,7 @@
             background: #0b1020;
             color: #e5e7eb;
             font-family: sans-serif;
-            max width: 800px;
+            max-width: 800px;
             margin: 40px auto;
             padding: 20px;
         }
@@ -23,7 +23,7 @@
         }
 
         input, textarea {
-            background: #15d30;
+            background: #e5e7eb;
             color: #06111b;
             border: 1px solid #334155;
         }
@@ -31,7 +31,7 @@
         button {
             background: #06b6d4;
             color: #06111b;
-            birder: none;
+            border: none;
             font-weight: bold;
         }
 
@@ -40,7 +40,7 @@
             padding: 16px;
             margin-top: 16px;
             border-radius: 10px;
-            overflow-warp: anywhere;
+            overflow-wrap: anywhere;
         }
 
         .message {
@@ -53,18 +53,18 @@
         }
 
         a {
-            color: #67ef9;
+            color: #67e8f9;
         }
     </style>
 </head>
 <body>
-    <h1>Neo Hub / Data Vault<h1>
+    <h1>Neo Hub / Data Vault</h1>
     <p>Tempat penyimpanan catatan pribadimu.</p>
     <p><a href="/">Kembali ke Dashboard</a></p>
 
-    {% with message = get_flashed_messages(with_categories=true) %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
         {% for category, message in messages %}
-            <p class="message">{{ message }}<?P
+            <p class="message">{{ message }}</p>
         {% endfor %}
     {% endwith %}
 
@@ -89,7 +89,7 @@
         <button type="submit">Simpan Catatan</button>
     </form>
 
-    <h2>Catatan Terimpan</h2>
+    <h2>Catatan Tersimpan</h2>
 
     {% for item in items %}
         <div class="item">
