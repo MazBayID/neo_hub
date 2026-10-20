@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Vault | Neo Hub</title>
+    <style>
+        body {
+            background: #0b1020;
+            color: #e5e7eb;
+            font-family: sans-serif;
+            max width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        input, textarea, button {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 8px;
+        }
+
+        input, textarea {
+            background: #15d30;
+            color: #06111b;
+            border: 1px solid #334155;
+        }
+
+        button {
+            background: #06b6d4;
+            color: #06111b;
+            birder: none;
+            font-weight: bold;
+        }
+
+        .item {
+            background: #151d30;
+            padding: 16px;
+            margin-top: 16px;
+            border-radius: 10px;
+            overflow-warp: anywhere;
+        }
+
+        .message {
+            color: #67e8f9;
+        }
+
+        .date {
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        a {
+            color: #67ef9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Neo Hub / Data Vault<h1>
+    <p>Tempat penyimpanan catatan pribadimu.</p>
+    <p><a href="/">Kembali ke Dashboard</a></p>
+
+    {% with message = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <p class="message">{{ message }}<?P
+        {% endfor %}
+    {% endwith %}
+
+    <h2>Buat Catatan</h2>
+
+    <form action="{{ url_for('add_vault_item') }}" method="POST">
+        <input
+            type="text"
+            name="title"
+            placeholder="judul catatan"
+            maxlength="150"
+            required
+        >
+
+        <textarea
+            name="content"
+            placeholder="Tulis isi catatan..."
+            rows="5"
+            required
+        ></textarea>
+
+        <button type="submit">Simpan Catatan</button>
+    </form>
+
+    <h2>Catatan Terimpan</h2>
+
+    {% for item in items %}
+        <div class="item">
+            <h3>{{ item["title"] }}</h3>
+            <p>{{ item["content"] }}</p>
+            <p class="date">
+                ID: {{ item["id"] }} |
+                {{ item["created_at"] }}
+            </p>
+        </div>
+    {% else %}
+        <p>Belum ada catatan tersimpan.</p>
+    {% endfor %}
+</body>
+</html>
+
+
