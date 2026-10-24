@@ -876,7 +876,7 @@ h2 {
 @media (max-width: 700px) {
     .sidebar {
         width: auto;
-        height: 68px;
+        height: 120px;
         inset: auto 0 0;
         padding: 7px 8px max(7px, env(safe-area-inset-bottom));
         border-top: 1px solid #253148;
