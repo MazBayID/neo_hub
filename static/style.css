@@ -54,11 +54,17 @@ button:focus-visible, a:focus-visible {
     padding: 25px 16px 16px;
     z-index: 5;
     height: 100vh;
+    height: 100dvh;
+    min-height: 0;
     overflow-y: auto;
-    overscroll-behavior: contain;
+    overflow-x: hidden;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
 }
 
 .brand {
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     gap: 11px;
@@ -92,6 +98,7 @@ button:focus-visible, a:focus-visible {
 }
 
 .sidebar-label {
+    flex-shrink: 0;
     padding: 0 12px;
     margin-bottom: 12px;
     color: #63738e;
@@ -107,6 +114,7 @@ button:focus-visible, a:focus-visible {
 .navigation {
     display: grid;
     gap: 6px;
+    flex-shrink: 0;
 }
 
 .nav-link {
@@ -143,6 +151,7 @@ button:focus-visible, a:focus-visible {
 }
 
 .sidebar-bottom {
+    flex-shrink: 0;
     margin-top: auto;
 }
 
