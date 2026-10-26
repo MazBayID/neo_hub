@@ -40,10 +40,11 @@ button:focus-visible, a:focus-visible {
 
 .app-shell {
     min-height: 100vh;
+    overflow: hidden;
 }
 
 .sidebar {
-    width: 238px;
+    width: 248px;
     background: var(--sidebar);
     border-right: 1px solid #1b2639;
     position: fixed;
@@ -52,6 +53,9 @@ button:focus-visible, a:focus-visible {
     flex-direction: column;
     padding: 25px 16px 16px;
     z-index: 5;
+    height: 100vh;
+    overflow-y: auto;
+    overscroll-behaviour: contain; 
 }
 
 .brand {
@@ -181,7 +185,7 @@ button:focus-visible, a:focus-visible {
 .sidebar-version {
     display: flex;
     justify-content: space-between;
-    padding: 19px 7px 0;
+    padding: 19px 10px 0;
     color: #62718a;
     font-size: 9px;
     letter-spacing: 1px;
@@ -192,8 +196,12 @@ button:focus-visible, a:focus-visible {
 }
 
 .main-area {
-    min-height: 100vh;
+    height: 100vh;
+    main-height: 0;
     margin-left: 238px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behaviour: contain;
 }
 
 .topbar {
@@ -918,8 +926,11 @@ h2 {
     }
 
     .main-area {
+        height: auto;
+        min-height: 100vh;
         margin-left: 0;
         padding-bottom: 72px;
+        overflow: visible;
     }
 
     .topbar {
@@ -1034,6 +1045,11 @@ h2 {
 
     .topbar-right {
         gap: 10px;
+    }
+    .app-shell {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
     }
 }
 
