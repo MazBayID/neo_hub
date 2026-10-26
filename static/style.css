@@ -55,7 +55,7 @@ button:focus-visible, a:focus-visible {
     z-index: 5;
     height: 100vh;
     overflow-y: auto;
-    overscroll-behaviour: contain; 
+    overscroll-behavior: contain;
 }
 
 .brand {
@@ -197,11 +197,11 @@ button:focus-visible, a:focus-visible {
 
 .main-area {
     height: 100vh;
-    main-height: 0;
-    margin-left: 238px;
+    min-height: 0;
+    margin-left: 248px;
     overflow-y: auto;
     overflow-x: hidden;
-    overscroll-behaviour: contain;
+    overscroll-behavior: contain;
 }
 
 .topbar {
