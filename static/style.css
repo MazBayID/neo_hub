@@ -1085,3 +1085,29 @@ h2 {
         max-width: 80px;
     }
 }
+
+
+/* Neo Hub historical/live crypto chart */
+.market-chart-panel { margin-top: 20px; }
+.chart-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+.chart-heading h2 { margin:6px 0; font-size:18px; }
+.chart-subtitle { margin:0; color:var(--muted); font-size:11px; }
+.chart-asset-label { display:flex; flex-direction:column; gap:6px; color:var(--muted); font-size:10px; }
+.chart-asset-label select { min-width:150px; padding:9px 11px; border:1px solid var(--border); border-radius:7px; background:#0b1422; color:var(--text); }
+.chart-live-row { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:20px 0; padding:15px; border:1px solid #24344a; border-radius:9px; background:#0c1524; }
+.chart-live-row > div { min-width:0; }
+.chart-live-label { display:block; margin-bottom:5px; color:var(--muted); font-size:10px; }
+.chart-live-row strong { display:block; overflow-wrap:anywhere; font-size:14px; }
+#chart-live-price { color:var(--cyan); font-size:20px; }
+.chart-toolbar { display:flex; flex-wrap:wrap; gap:7px; margin:12px 0; }
+.range-button { padding:7px 12px; border:1px solid var(--border); border-radius:6px; background:#0c1524; color:var(--muted); font-size:10px; cursor:pointer; }
+.range-button:hover,.range-button.active { border-color:#398b9b; background:#143344; color:var(--cyan); }
+.chart-canvas-wrap { position:relative; width:100%; height:300px; }
+.chart-status,.chart-disclaimer { color:var(--muted); font-size:10px; line-height:1.7; }
+.chart-disclaimer { margin-bottom:0; }
+@media (max-width:700px) {
+ .chart-heading { flex-direction:column; }
+ .chart-asset-label select { width:100%; }
+ .chart-live-row { grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+ .chart-canvas-wrap { height:250px; }
+}
