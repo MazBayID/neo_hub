@@ -131,6 +131,64 @@ def market_data():
             "coins": [],
         }), 503
 
+
+# Cache histori pasar (CoinGecko dapat membatasi request).
+_history_cache = {}
+HISTORY_CACHE_SECONDS = 60
+_HISTORY_PERIODS = {"1h": "1", "24h": "1", "7d": "7", "30d": "30", "365d": "365", "all": "max"}
+_HISTORY_COINS = {"bitcoin", "ethereum", "solana"}
+
+@app.route("/api/market/history")
+def market_history():
+    coin = request.args.get("coin", "bitcoin").strip().lower()
+    period = request.args.get("range", "24h").strip().lower()
+    if coin not in _HISTORY_COINS or period not in _HISTORY_PERIODS:
+        return jsonify({"ok": False, "message": "Aset atau rentang waktu tidak valid."}), 400
+
+    key = (coin, period)
+    now = time.time()
+    cached = _history_cache.get(key)
+    if cached and now - cached["timestamp"] < HISTORY_CACHE_SECONDS:
+        return jsonify(cached["data"])
+
+    params = urllib.parse.urlencode({
+        "vs_currency": "usd",
+        "days": _HISTORY_PERIODS[period],
+    })
+    url = f"https://api.coingecko.com/api/v3/coins/{coin}/market_chart?{params}"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "NeoHub/1.0"})
+        with urllib.request.urlopen(req, timeout=20) as response:
+            raw = json.loads(response.read().decode("utf-8"))
+        prices = raw.get("prices", [])
+        if not prices:
+            raise ValueError("Data historis kosong.")
+        result = {
+            "ok": True,
+            "coin": coin,
+            "range": period,
+            "source": "CoinGecko",
+            "fetched_at": int(time.time()),
+            "prices": [{"time": int(point[0]), "price": float(point[1])}
+                       for point in prices if len(point) >= 2],
+        }
+        _history_cache[key] = {"timestamp": time.time(), "data": result}
+        return jsonify(result)
+    except Exception:
+        app.logger.exception("Gagal mengambil data historis pasar.")
+        if cached:
+            stale = dict(cached["data"])
+            stale["stale"] = True
+            stale["ok"] = False
+            stale["message"] = "API gagal; data historis cache ditampilkan."
+            return jsonify(stale), 200
+        return jsonify({
+            "ok": False,
+            "message": "Data historis gagal dimuat. Coba lagi beberapa saat.",
+            "prices": [],
+        }), 503
+
+
 if __name__ == "__main__":
     app.run(
         host="127.0.0.1",
