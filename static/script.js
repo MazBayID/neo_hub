@@ -206,23 +206,156 @@
             if (note) note.textContent = "Belum terhubung ke API emas";
         }
 
-        const panel = marketPage.querySelector(".empty-panel");
-        if (!panel) return;
-
-        const heading = document.createElement("h2");
-        heading.textContent = "Live Crypto Market";
-
-        const description = document.createElement("p");
-        description.textContent = stale
-            ? "Data mungkin sudah tidak terbaru."
-            : "Harga dan perubahan 24 jam dalam USD.";
-
-        const list = document.createElement("div");
-        list.className = "market-list";
-        list.replaceChildren(...coins.map(makeMarketRow));
-
-        panel.replaceChildren(heading, description, list);
+        // Chart panel dikelola terpisah agar tidak terhapus saat quote diperbarui.
     }
+
+
+    const chartCanvas = document.querySelector("#market-chart");
+    const chartAssetSelect = document.querySelector("#chart-asset");
+    const chartStatus = document.querySelector("#chart-status");
+    const livePriceEl = document.querySelector("#chart-live-price");
+    const liveChangeEl = document.querySelector("#chart-live-change");
+    const highLowEl = document.querySelector("#chart-high-low");
+    const updatedEl = document.querySelector("#chart-updated");
+    let marketChart = null;
+    let selectedRange = "1h";
+    let chartHistory = [];
+    let chartCoin = "bitcoin";
+    let chartLoading = false;
+    let lastLiveTimestamp = 0;
+
+    const coinSymbols = { bitcoin: "BTC", ethereum: "ETH", solana: "SOL" };
+    const rangeLabels = { "1h":"1 jam", "24h":"24 jam", "7d":"7 hari", "30d":"1 bulan", "365d":"1 tahun", "all":"seluruh periode" };
+
+    function chartTimeLabel(timestamp, range) {
+        const date = new Date(timestamp);
+        if (range === "1h" || range === "24h") {
+            return date.toLocaleTimeString("id-ID", {hour:"2-digit", minute:"2-digit"});
+        }
+        return date.toLocaleDateString("id-ID", {day:"2-digit", month:"short", year: range === "7d" ? undefined : "2-digit"});
+    }
+
+    function drawChart() {
+        if (!chartCanvas || typeof Chart === "undefined") {
+            if (chartStatus) chartStatus.textContent = "Chart.js gagal dimuat. Periksa koneksi internet/CDN.";
+            return;
+        }
+        const now = Date.now();
+        const filtered = selectedRange === "1h"
+            ? chartHistory.filter(point => point.time >= now - 3600000)
+            : chartHistory;
+        const points = filtered.map(point => ({x:point.time, y:point.price}));
+        if (!points.length) {
+            if (chartStatus) chartStatus.textContent = "Belum ada titik data pada rentang ini.";
+            return;
+        }
+        const data = {
+            datasets: [{
+                label: coinSymbols[chartCoin] + " / USD",
+                data: points,
+                borderColor: "#52e4f6",
+                backgroundColor: "rgba(82,228,246,0.10)",
+                borderWidth: 2,
+                pointRadius: points.length > 100 ? 0 : 2,
+                pointHoverRadius: 4,
+                fill: true,
+                tension: 0.22
+            }]
+        };
+        const options = {
+            responsive:true, maintainAspectRatio:false, animation:false,
+            parsing:false,
+            interaction:{mode:"nearest", intersect:false},
+            plugins:{
+                legend:{display:false},
+                tooltip:{callbacks:{label:ctx => money(ctx.parsed.y)}}
+            },
+            scales:{
+                x:{type:"linear", ticks:{maxTicksLimit:6, callback:value => chartTimeLabel(value,selectedRange)}, grid:{color:"rgba(130,145,170,0.10)"}, title:{display:false}},
+                y:{grid:{color:"rgba(130,145,170,0.12)"}, ticks:{maxTicksLimit:5, callback:value => money(value)}}
+            }
+        };
+        if (marketChart) {
+            marketChart.data = data;
+            marketChart.options = options;
+            marketChart.update("none");
+        } else {
+            marketChart = new Chart(chartCanvas, {type:"line", data, options});
+        }
+        let low=Infinity, high=-Infinity;
+        for (const point of filtered) {
+            if (point.price < low) low=point.price;
+            if (point.price > high) high=point.price;
+        }
+        if (highLowEl && Number.isFinite(low) && Number.isFinite(high)) {
+            highLowEl.textContent = money(high) + " / " + money(low);
+        }
+        if (chartStatus) chartStatus.textContent = `${coinSymbols[chartCoin]} · ${rangeLabels[selectedRange]} · ${points.length} titik · CoinGecko`;
+    }
+
+    async function loadChartHistory() {
+        if (!chartCanvas || chartLoading) return;
+        chartLoading = true;
+        chartCoin = chartAssetSelect?.value || chartCoin;
+        if (chartStatus) chartStatus.textContent = "Mengambil data historis…";
+        try {
+            const response = await fetch(`/api/market/history?coin=${encodeURIComponent(chartCoin)}&range=${encodeURIComponent(selectedRange)}`, {cache:"no-store"});
+            const data = await response.json();
+            if (!response.ok || !Array.isArray(data.prices) || !data.prices.length) {
+                throw new Error(data.message || "Data historis tidak tersedia.");
+            }
+            chartHistory = data.prices.filter(p => Number.isFinite(p.time) && Number.isFinite(p.price));
+            if (selectedRange === "1h") {
+                const cutoff = Date.now() - 3600000;
+                chartHistory = chartHistory.filter(p => p.time >= cutoff);
+            }
+            lastLiveTimestamp = 0;
+            drawChart();
+            if (data.stale && chartStatus) chartStatus.textContent += " · cache lama";
+        } catch (error) {
+            console.error("Chart history error:", error);
+            if (chartStatus) chartStatus.textContent = error.message || "Gagal memuat data chart.";
+        } finally {
+            chartLoading = false;
+        }
+    }
+
+    function updateLiveChart(coins) {
+        const coin = coins.find(item => item.id === (chartAssetSelect?.value || chartCoin));
+        if (!coin) return;
+        chartCoin = coin.id;
+        if (livePriceEl) livePriceEl.textContent = money(coin.price);
+        if (liveChangeEl) {
+            liveChangeEl.textContent = percentage(coin.change_24h);
+            const change = Number(coin.change_24h);
+            liveChangeEl.style.color = change > 0 ? "#36d399" : change < 0 ? "#ff6b81" : "inherit";
+        }
+        if (updatedEl) updatedEl.textContent = new Date().toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+        // Tambahkan quote baru hanya untuk grafik intraday agar tidak mencemari rentang historis panjang.
+        if ((selectedRange === "1h" || selectedRange === "24h") && marketChart && Number.isFinite(Number(coin.price))) {
+            const timestamp = Date.now();
+            if (timestamp - lastLiveTimestamp >= 9000) {
+                chartHistory.push({time:timestamp, price:Number(coin.price)});
+                lastLiveTimestamp = timestamp;
+                const cutoff = timestamp - (selectedRange === "1h" ? 3600000 : 86400000);
+                chartHistory = chartHistory.filter(point => point.time >= cutoff);
+                drawChart();
+            }
+        }
+    }
+
+    if (chartAssetSelect) chartAssetSelect.addEventListener("change", () => {
+        chartCoin = chartAssetSelect.value;
+        loadChartHistory();
+        loadMarketData();
+    });
+    document.querySelectorAll(".range-button").forEach(button => {
+        button.addEventListener("click", () => {
+            selectedRange = button.dataset.range || "24h";
+            document.querySelectorAll(".range-button").forEach(item => item.classList.toggle("active", item === button));
+            loadChartHistory();
+        });
+    });
 
     let marketRequestRunning = false;
 
@@ -248,6 +381,7 @@
             const stale = data.stale === true;
             renderOverview(data.coins, stale);
             renderMarkets(data.coins, stale);
+            updateLiveChart(data.coins);
 
             console.info("Market data diperbarui:", data.source || "API");
         } catch (error) {
@@ -277,8 +411,9 @@
         }
     }
 
+    loadChartHistory();
     loadMarketData();
-    window.setInterval(loadMarketData, 60_000);
+    window.setInterval(loadMarketData, 10_000);
 
     console.info("Neo Hub UI siap.");
 })();
