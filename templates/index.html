@@ -7,6 +7,7 @@
     <meta name="theme-color" content="#080d18">
     <title>Neo Hub | Personal Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js" defer></script>
     <script src="{{ url_for('static', filename='script.js') }}" defer></script>
 </head>
 <body>
@@ -196,10 +197,38 @@
                         <article class="stat-card"><div class="stat-label">STOCK MARKET</div><div class="stat-value">--</div><div class="stat-note">Menunggu sumber data</div></article>
                         <article class="stat-card"><div class="stat-label">PRECIOUS METALS</div><div class="stat-value">--</div><div class="stat-note">Menunggu sumber data</div></article>
                     </div>
-                    <article class="panel empty-panel">
-                        <div class="empty-icon">↗</div>
-                        <h2>Market data will appear here</h2>
-                        <p>Grafik, harga terkini, dan perubahan harga akan ditambahkan setelah API dikonfigurasi.</p>
+                    <article class="panel market-chart-panel">
+                        <div class="chart-heading">
+                            <div>
+                                <div class="eyebrow">LIVE MARKET · COINGECKO</div>
+                                <h2>Price Chart</h2>
+                                <p class="chart-subtitle">Harga historis dan pembaruan harga berkala.</p>
+                            </div>
+                            <label class="chart-asset-label" for="chart-asset">Aset
+                                <select id="chart-asset">
+                                    <option value="bitcoin">Bitcoin · BTC</option>
+                                    <option value="ethereum">Ethereum · ETH</option>
+                                    <option value="solana">Solana · SOL</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="chart-live-row">
+                            <div><span class="chart-live-label">Harga saat ini</span><strong id="chart-live-price">Memuat…</strong></div>
+                            <div><span class="chart-live-label">Perubahan 24 jam</span><strong id="chart-live-change">--</strong></div>
+                            <div><span class="chart-live-label">High / Low</span><strong id="chart-high-low">-- / --</strong></div>
+                            <div><span class="chart-live-label">Update</span><strong id="chart-updated">Menunggu data</strong></div>
+                        </div>
+                        <div class="chart-toolbar" role="group" aria-label="Rentang waktu grafik">
+                            <button class="range-button active" data-range="1h">1H</button>
+                            <button class="range-button" data-range="24h">24H</button>
+                            <button class="range-button" data-range="7d">7D</button>
+                            <button class="range-button" data-range="30d">1M</button>
+                            <button class="range-button" data-range="365d">1Y</button>
+                            <button class="range-button" data-range="all">ALL</button>
+                        </div>
+                        <div class="chart-canvas-wrap"><canvas id="market-chart" aria-label="Grafik harga crypto" role="img"></canvas></div>
+                        <p id="chart-status" class="chart-status" aria-live="polite">Memuat grafik historis…</p>
+                        <p class="chart-disclaimer">Refresh tampilan setiap 10 detik. Data berasal dari CoinGecko, bukan feed tick bursa; pembaruan harga bergantung pada ketersediaan API.</p>
                     </article>
                 </section>
 
