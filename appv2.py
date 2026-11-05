@@ -20,7 +20,7 @@ database.init_db()
 
 #cache harga pasar agar permintaan API tidak berlebihan
 _market_cache = {"timestamp": 0, "data": None}
-CACHE_SECONDS = 60
+CACHE_SECONDS = 10
 
 @app.route("/")
 def home():
